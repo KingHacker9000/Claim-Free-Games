@@ -41,6 +41,7 @@ for i in range(numOfGames):
 
     try:
         driver.find_element_by_xpath("//button[@class='Button-main_d4ab9eb9 Button-primary_093f075b Button-hasHover_8f3ca91c Button-hasMinWidth_b666ef1e Button-dark_c0429b3d']").click()
+        print("18+")
         time.sleep(2)
 
 
@@ -71,13 +72,13 @@ for i in range(numOfGames):
 
         except:
             driver.get("https://www.epicgames.com/store/en-US/free-games")
+            print("Pre-Bought")
 
 
     except:
         driver.get("https://www.epicgames.com/store/en-US/free-games")
-
-
-
+        print("Pre-Bought")
+        
 
     time.sleep(10)
     Games = driver.find_elements_by_class_name("css-qk4tu0")
