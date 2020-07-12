@@ -10,5 +10,8 @@ Download The Python File And Run (Make sure to download All imports)
 # First Run
 The First Run Will Require The User To Input Their epic Games registered Email and Password
 
+# Change Any Settings
+Run The DeleteCredentials.exe
+
 # Set Up a windows Task Scheduler
 (Check Google Cuz Its Hard To Explain ;D)
