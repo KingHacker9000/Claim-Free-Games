@@ -12,7 +12,8 @@ driver = webdriver    # declare Variable
 
 def Claim():
     try:
-
+        
+        print("start")
         # Check If Credentials Is Saved
 
         if not os.path.exists("credentials.pkl"):
@@ -126,6 +127,8 @@ Claim()
 schedule.every().hour.do(Claim)
 
 while True:
+    print("run")
     schedule.run_pending()
+    print("done")
     time.sleep(1)
 
