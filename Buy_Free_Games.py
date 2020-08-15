@@ -7,7 +7,7 @@ import os     # Open File
 import schedule
 
 driver = webdriver    # declare Variable
-
+schedule.every().hour.do(Claim)
 
 
 def Claim():
@@ -124,7 +124,6 @@ def Claim():
         
 def SignIn():
     GameLimit = 20  # Cycle through all games in First Run
-    
             
     try:
         email = os.environ['email']
@@ -133,8 +132,7 @@ def SignIn():
         GameLimit = 20  # Cycle through all games in First Run
         pickle.dump(credentials,open("credentials.pkl","wb"))  # Save Credentials as an encrypted File
         print("To Enter for New Account Run DeleteCredentials.py ")
-
-schedule.every().hour.do(Claim)
+        
 
 while True:
     print("run")
@@ -142,4 +140,3 @@ while True:
     schedule.run_pending()
     print("done")
     time.sleep(1)
-
