@@ -8,6 +8,8 @@ import schedule
 
 driver = webdriver    # declare Variable
 
+
+
 def Claim():
     try:
 
@@ -119,6 +121,8 @@ def Claim():
         except:
             pass
 
+
+Claim()
 
 schedule.every().day.at("10:30").do(Claim)
 
