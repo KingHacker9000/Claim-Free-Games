@@ -121,6 +121,19 @@ def Claim():
             driver.quit()
         except:
             pass
+        
+def SignIn():
+    if not os.path.exists("credentials.pkl"):
+            # If file Doesnt Exists
+
+            email = input("Enter Epic Games Email Address:\t")
+            password = input("Enter Epic Games Password:\t")
+            GameLimit = int(input(
+                "Enter How many Games To cycle Through (Note: First Run will Go through all Games) (Recommended is 5):\t"))
+            credentials = email + "-" + password + "-" + str(GameLimit)
+            GameLimit = 20  # Cycle through all games in First Run
+            pickle.dump(credentials,open("credentials.pkl","wb"))  # Save Credentials as an encrypted File
+            print("To Enter for New Account Run DeleteCredentials.py ")
 
 
 Claim()
@@ -128,6 +141,7 @@ schedule.every().hour.do(Claim)
 
 while True:
     print("run")
+    SignIn()
     schedule.run_pending()
     print("done")
     time.sleep(1)
