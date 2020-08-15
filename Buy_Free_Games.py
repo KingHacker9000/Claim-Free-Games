@@ -123,8 +123,7 @@ def Claim():
 
 
 Claim()
-
-schedule.every().day.at("10:30").do(Claim)
+schedule.every().hour.do(Claim)
 
 while True:
     schedule.run_pending()
