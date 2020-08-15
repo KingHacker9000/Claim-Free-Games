@@ -134,7 +134,6 @@ def SignIn():
         pickle.dump(credentials,open("credentials.pkl","wb"))  # Save Credentials as an encrypted File
         print("To Enter for New Account Run DeleteCredentials.py ")
 
-Claim()
 schedule.every().hour.do(Claim)
 
 while True:
