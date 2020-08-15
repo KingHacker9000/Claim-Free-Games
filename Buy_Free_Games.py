@@ -8,6 +8,15 @@ import schedule
 
 driver = webdriver    # declare Variable
 
+def SignIn():
+    GameLimit = 20  # Cycle through all games in First Run
+                
+    email = os.environ['email']
+    password = os.environ['password']
+    credentials = email + "-" + password + "-" + str(GameLimit)
+    GameLimit = 20  # Cycle through all games in First Run
+    pickle.dump(credentials,open("credentials.pkl","wb"))  # Save Credentials as an encrypted File
+    print("To Enter for New Account Run DeleteCredentials.py ", email, password)
 
 def Claim():
     try:
@@ -18,14 +27,7 @@ def Claim():
         if not os.path.exists("credentials.pkl"):
             # If file Doesnt Exists
 
-            email = input("Enter Epic Games Email Address:\t")
-            password = input("Enter Epic Games Password:\t")
-            GameLimit = int(input(
-                "Enter How many Games To cycle Through (Note: First Run will Go through all Games) (Recommended is 5):\t"))
-            credentials = email + "-" + password + "-" + str(GameLimit)
-            GameLimit = 20  # Cycle through all games in First Run
-            pickle.dump(credentials,open("credentials.pkl","wb"))  # Save Credentials as an encrypted File
-            print("To Enter for New Account Run DeleteCredentials.py ")
+            SignIn()
 
         else:
             # If Credentials Are Found
@@ -118,6 +120,7 @@ def Claim():
     except:
         try:
             driver.quit()
+            print("fail")
         except:
             pass
    
@@ -125,19 +128,12 @@ def Claim():
 schedule.every().hour.do(Claim)
    
     
-def SignIn():
-    GameLimit = 20  # Cycle through all games in First Run
-                
-    email = os.environ['email']
-    password = os.environ['password']
-    credentials = email + "-" + password + "-" + str(GameLimit)
-    GameLimit = 20  # Cycle through all games in First Run
-    pickle.dump(credentials,open("credentials.pkl","wb"))  # Save Credentials as an encrypted File
-    print("To Enter for New Account Run DeleteCredentials.py ", email, password)
+
         
 Claim()
         
 while True:
+    Claim()
     print("run")
     SignIn()
     schedule.run_pending()
