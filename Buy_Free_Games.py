@@ -133,9 +133,10 @@ def SignIn():
     credentials = email + "-" + password + "-" + str(GameLimit)
     GameLimit = 20  # Cycle through all games in First Run
     pickle.dump(credentials,open("credentials.pkl","wb"))  # Save Credentials as an encrypted File
-    print("To Enter for New Account Run DeleteCredentials.py ")
+    print("To Enter for New Account Run DeleteCredentials.py ", email, password)
         
-
+Claim()
+        
 while True:
     print("run")
     SignIn()
