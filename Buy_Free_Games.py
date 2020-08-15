@@ -7,7 +7,6 @@ import os     # Open File
 import schedule
 
 driver = webdriver    # declare Variable
-schedule.every().hour.do(Claim)
 
 
 def Claim():
@@ -121,7 +120,11 @@ def Claim():
             driver.quit()
         except:
             pass
-        
+   
+
+schedule.every().hour.do(Claim)
+   
+    
 def SignIn():
     GameLimit = 20  # Cycle through all games in First Run
                 
