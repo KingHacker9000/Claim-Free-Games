@@ -99,7 +99,7 @@ def claim():
             driver.quit()
         except:
             pass
-
+        print("fail")
 
 claim()
 print("Cycle 1")
