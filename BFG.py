@@ -7,8 +7,8 @@ import os     # Open File
 import schedule
 
 driver = webdriver    # declare Variable
-email = "email"
-password = "password"
+email = os.environ.get("email")
+password = os.environ.get("password")
 
 
 def claim():
@@ -17,7 +17,7 @@ def claim():
         # Check If Credentials Is Saved
 
         # Open webdriver
-        driver = webdriver.Chrome(r"chromedriver.exe")
+        driver = webdriver.Chrome(executable_path=os.environ.get("Chrome-Driver"))
         driver.minimize_window()
         driver.get("https://www.epicgames.com/store/en-US/free-games")
         time.sleep(15)
@@ -99,7 +99,7 @@ def claim():
             driver.quit()
         except:
             pass
-        print("fail")
+
 
 claim()
 print("Cycle 1")
