@@ -11,8 +11,7 @@ email = "email"
 password = "password"
 
 
-
-def Claim():
+def claim():
     try:
 
         # Check If Credentials Is Saved
@@ -102,9 +101,10 @@ def Claim():
             pass
 
 
-Claim()
+claim()
+print("Cycle 1")
 
-schedule.every().day.at("10:30").do(Claim)
+schedule.every().hour.do(claim)
 
 while True:
     schedule.run_pending()
