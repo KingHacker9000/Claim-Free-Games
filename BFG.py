@@ -11,40 +11,11 @@ email = "email"
 password = "password"
 
 
-def sign_in():
 
-    try:
-        if not os.path.exists("credentials.pkl"):
-            # If file Doesnt Exists
-
-            email = input("Enter Epic Games Email Address:\t")
-            password = input("Enter Epic Games Password:\t")
-            credentials = email + "-" + password
-            pickle.dump(credentials, open("credentials.pkl", "wb"))  # Save Credentials as an encrypted File
-            print("To Enter for New Account Run DeleteCredentials.py ")
-
-        else:
-            # If Credentials Are Found
-
-            Token = pickle.load(open("credentials.pkl", "rb"))
-            credentials = Token.split("-")
-            email = credentials[0]
-            password = credentials[1]
-            print("To Enter for New Account Run DeleteCredentials.py ")
-        return True
-
-    except:
-        print("Error in Log-In")
-        return False
-
-    
 def Claim():
     try:
 
         # Check If Credentials Is Saved
-
-        if not sign_in():
-            return None
 
         # Open webdriver
         driver = webdriver.Chrome(r"chromedriver.exe")
