@@ -10,7 +10,7 @@ import schedule
 driver = webdriver    # declare Variable
 
 options = Options()
-options.add_argument("user-data-dir=C:\\Users\\shilp\\Desktop\\Python\\Get-Free-Games\\Chrome_Profile")
+options.add_argument("user-data-dir=Chrome_Profile")
 
 def Claim():
 
