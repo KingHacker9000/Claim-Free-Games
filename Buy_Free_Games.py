@@ -5,14 +5,12 @@ import time    # Allow The program to Wait for Load
 import pickle    # Save Credentials Locally as an encrypted file
 import os     # Open File
 
-import schedule
-
-driver = webdriver    # declare Variable
-
 options = Options()
 options.add_argument("user-data-dir=Chrome_Profile")
+GameLimit = 20
 
-def Claim():
+
+def claim():
 
     j = 0
 
@@ -25,7 +23,7 @@ def Claim():
 
             email = input("Enter Epic Games Email Address:\t")
             password = input("Enter Epic Games Password:\t")
-            GameLimit = 20    # Cycle through all games in First Run
+
             credentials = email + "-" + password + "-" + str(GameLimit)
             pickle.dump(credentials, open("credentials.pkl", "wb"))  # Save Credentials as an encrypted File
             print("To Enter for New Account Run DeleteCredentials.py ")
@@ -33,34 +31,31 @@ def Claim():
         else:
             # If Credentials Are Found
 
-            Token = pickle.load(open("credentials.pkl","rb"))
+            Token = pickle.load(open("credentials.pkl", "rb"))
             credentials = Token.split("-")
             email = credentials[0]
             password = credentials[1]
-            GameLimit = int(credentials[2])
             print("To Enter for New Account Run DeleteCredentials.py ")
 
+        print("driver Start")
         # Open webdriver
         driver = webdriver.Chrome(r"chromedriver.exe", options=options)
-        driver.minimize_window()
         driver.get("https://www.epicgames.com/store/en-US/free-games")
         time.sleep(15)
+        print("End")
 
         # Find All Free Games
         Games = driver.find_elements_by_xpath("//body/div/div/div/main/div/div/div/div/div/div/div/div[1]/section[1]/div[1]/div")
         MoreG = driver.find_elements_by_xpath("//body/div/div/div/main/div/div/div/div/div/div/div/div[2]/section[1]/div[1]/div")
         numOfGames = len(Games) + len(MoreG)
-        print(numOfGames, len(Games), len(MoreG))
 
         # Iterate Through For Every Free Game Found
         for i in range(numOfGames):
-            print(i)
             try:
                 time.sleep(5)
 
                 Games = driver.find_elements_by_xpath("//body/div/div/div/main/div/div/div/div/div/div/div/div[1]/section[1]/div[1]/div")
-                MoreG = driver.find_elements_by_xpath("//body/div/div/div/main/div/div/div/div/div/div/div/div[2]/section[1]/div[1]/div")
-                print(MoreG)
+                MoreG = driver.find_elements_by_xpath("//body/div/div/div/main/div/div/div/div/div/div/div/div/section/div/div")
 
                 try:
                     if i >= numOfGames:  # Check If Users wished Game Count is completed
@@ -90,8 +85,11 @@ def Claim():
                 try:
                     time.sleep(5)
                     # Search for Buy Button
-                    driver.find_element_by_xpath(
-                        "//body/div/div/div/main/div/div/div/div/div/div/div/div/div/div/div/div/div/div/button[1]").click()
+                    try:
+                        driver.find_element_by_xpath("//html//body//div//div//div//main//div//div//div//div//div//div//div//div//div//div//div//div//div//div//button//span//span[contains(text(),'Get')]").click()
+
+                    except:
+                        pass
 
                     if i == 0:
 
@@ -112,10 +110,10 @@ def Claim():
                     try:
                         # Try And Purchase The Game
 
-                        time.sleep(25)
+                        time.sleep(30)
                         driver.find_element_by_xpath("//button[@class='btn btn-primary']").click()  # Click Confirm to Buy
 
-                        time.sleep(5)
+                        time.sleep(10)
                         driver.get("https://www.epicgames.com/store/en-US/free-games")  # Return To Games Page
 
                     except:
@@ -147,5 +145,5 @@ def Claim():
         return False
 
 
-while not Claim():
+while not claim():
     time.sleep(30)
