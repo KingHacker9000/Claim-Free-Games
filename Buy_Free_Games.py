@@ -4,6 +4,7 @@ from selenium.webdriver.chrome.options import Options
 import time    # Allow The program to Wait for Load
 import pickle    # Save Credentials Locally as an encrypted file
 import os     # Open File
+from sys import platform # checks what OS you are running
 
 options = Options()
 options.add_argument("user-data-dir=Chrome_Profile")
@@ -11,6 +12,21 @@ GameLimit = 20
 
 
 def claim():
+    print("")
+    print("#"*90)
+    print("""This script requires you to have Chrome/Chromium installed beside Chromedriver!
+        """)
+    print("""If you use a Linux based OS please install the ChromeDriver package
+        On Ubuntu/Mint/Popos install it with  sudo apt install chromium-chromedriver
+        On other Distros, use your package manager of choice!
+
+        """)
+
+    print("""Chromedriver should be available on homebrew or other 3rd pary pacmans on MacOS! (Unverified!)
+        """)
+    print("#"*90)
+    print("")
+
 
     j = 0
 
@@ -35,12 +51,32 @@ def claim():
             credentials = Token.split("-")
             email = credentials[0]
             password = credentials[1]
-            print("To Enter for New Account Run DeleteCredentials.py ")
+            print("Found! To Enter for New Account Run DeleteCredentials.py ")
 
         print("driver Start")
         # Open webdriver
-        driver = webdriver.Chrome(r"chromedriver.exe", options=options)
-        driver.get("https://www.epicgames.com/store/en-US/free-games")
+        try:
+
+
+            if platform == "linux" or platform == "linux2":
+                print("Platform = Linux")
+                driver = webdriver.Chrome(r"chromedriver", options=options)
+            elif platform == "darwin":
+                print("Platform = Macos/OSX")
+                print("MacOS is not supported as of now and the following code is not tested on MacOS!")
+                driver = webdriver.Chrome(r"chromedriver", options=options)
+            elif platform == "win32":
+                print("Platform = Windows")
+                driver = webdriver.Chrome(r"chromedriver.exe", options=options)
+            else:
+                print("Your OS is unsupported!")
+
+            driver.get("https://www.epicgames.com/store/en-US/free-games")
+            print("starting Chrome(ium)")
+
+        except Exception as e:
+            print("Something went wrong with ChromeDriver:")
+            print(e)
         time.sleep(15)
         print("End")
 
@@ -50,6 +86,7 @@ def claim():
         numOfGames = len(Games) + len(MoreG)
 
         # Iterate Through For Every Free Game Found
+        print(str(numOfGames) , "free games found!" )
         for i in range(numOfGames):
             try:
                 time.sleep(5)
