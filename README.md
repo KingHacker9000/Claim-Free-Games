@@ -15,7 +15,7 @@ Normal runs therefore use no browser at all.
 
 ## Raspberry Pi 5 setup
 
-Requirements: 64-bit Raspberry Pi OS or Ubuntu and Node.js 22+.
+Requirements: 64-bit Raspberry Pi OS or Ubuntu. The installer automatically installs Node.js 22 LTS + npm system-wide if the OS-provided Node is missing or too old.
 
 ```bash
 git clone https://github.com/KingHacker9000/Claim-Free-Games.git
