@@ -1,7 +1,7 @@
 import { mkdir } from 'node:fs/promises';
 import { config } from './config.js';
 import { authorizationUrl, discoverFreeOffers, exchangeAuthorizationCode, fetchEntitlements, isOwned, quickPurchase, refreshSession, waitForOwnership } from './epic-api.js';
-import { claimWithBrowser } from './browser.js';
+import { claimWithBrowser, testBrowserAssist } from './browser.js';
 import { loadSession, loadState, saveSession, saveState } from './storage.js';
 import { notify } from './notifier.js';
 import type { EpicSession, FreeOffer } from './types.js';
@@ -117,10 +117,25 @@ async function doctor() {
   }
 }
 
+async function notifyTest() {
+  if (!config.ntfyUrl) throw new Error('NTFY_URL is not configured in .env');
+  await notify('Claim-Free-Games test', 'Phone notifications from your Raspberry Pi are working.', { priority: 4 });
+  console.log('Notification request sent successfully.');
+}
+
+async function assistTest(args: string[]) {
+  if (!config.vncPassword) throw new Error('VNC_PASSWORD is not configured in .env');
+  const raw = args.find(x => x.startsWith('--seconds='))?.slice('--seconds='.length);
+  const seconds = raw ? Math.max(15, Math.min(Number(raw) || 120, 900)) : 120;
+  await testBrowserAssist(seconds);
+}
+
 const [command = 'run', ...args] = process.argv.slice(2);
 try {
   if (command === 'auth') await auth(args);
   else if (command === 'doctor') await doctor();
+  else if (command === 'notify-test') await notifyTest();
+  else if (command === 'assist-test') await assistTest(args);
   else if (command === 'run') await run();
   else throw new Error(`Unknown command: ${command}`);
 } catch (e) {
