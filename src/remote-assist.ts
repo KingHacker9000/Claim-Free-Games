@@ -15,7 +15,7 @@ async function run(command: string, args: string[]) {
   await new Promise<void>((resolve, reject) => {
     const p = spawn(command, args, { stdio: 'ignore' });
     p.once('error', reject);
-    p.once('exit', code => code === 0 ? resolve() : reject(new Error(`${command} exited ${code}`)));
+    p.once('exit', (code: number | null) => code === 0 ? resolve() : reject(new Error(`${command} exited ${code}`)));
   });
 }
 
@@ -32,8 +32,8 @@ export async function startRemoteAssist(reason: string, click?: string) {
 
   const x11vnc = spawn('x11vnc', ['-display', display, '-forever', '-shared', '-localhost', '-rfbport', '5900', '-rfbauth', authFile], { stdio: 'ignore' });
   const websockify = spawn('websockify', ['--web', novnc, `${config.remoteAssistBind}:${config.remoteAssistPort}`, 'localhost:5900'], { stdio: 'ignore' });
-  x11vnc.on('error', e => console.error('x11vnc:', e));
-  websockify.on('error', e => console.error('websockify:', e));
+  x11vnc.on('error', (e: Error) => console.error('x11vnc:', e));
+  websockify.on('error', (e: Error) => console.error('websockify:', e));
   processes.push(x11vnc, websockify);
 
   const url = config.remoteAssistUrl || `http://localhost:${config.remoteAssistPort}/vnc.html?autoconnect=true&resize=remote`;
