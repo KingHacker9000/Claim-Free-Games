@@ -1,0 +1,12 @@
+[Unit]
+Description=Check Epic giveaways every 6 hours
+
+[Timer]
+OnBootSec=10min
+OnUnitActiveSec=6h
+RandomizedDelaySec=15min
+Persistent=true
+Unit=claim-free-games.service
+
+[Install]
+WantedBy=timers.target

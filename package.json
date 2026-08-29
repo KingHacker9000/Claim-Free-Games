@@ -1,0 +1,21 @@
+{
+  "name": "claim-free-games-v2",
+  "version": "2.0.0-beta.1",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "claim": "npm run build --silent && node dist/index.js run",
+    "auth": "npm run build --silent && node dist/index.js auth",
+    "doctor": "npm run build --silent && node dist/index.js doctor",
+    "test": "npm run build --silent && node --test dist/test/*.test.js"
+  },
+  "dependencies": {
+    "patchright": "1.62.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "typescript": "5.8.3"
+  }
+}
