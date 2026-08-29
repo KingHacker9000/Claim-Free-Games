@@ -9,13 +9,38 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 USER_NAME="${SUDO_USER:-$USER}"
 
 sudo apt-get update
-sudo apt-get install -y chromium xvfb x11vnc novnc websockify ca-certificates
+sudo apt-get install -y chromium xvfb x11vnc novnc websockify ca-certificates curl gnupg
 
-cd "$ROOT"
-if ! command -v node >/dev/null || [[ "$(node -p 'Number(process.versions.node.split(`.`)[0])')" -lt 22 ]]; then
-  echo "Node.js 22+ is required. Install it first, then rerun this script."
+# Raspberry Pi OS/Debian 13 currently ships an older Node release. Install the
+# NodeSource 22.x LTS package system-wide so npm is also available to systemd.
+NODE_MAJOR=0
+if command -v node >/dev/null 2>&1; then
+  NODE_MAJOR="$(node -p 'Number(process.versions.node.split(`.`)[0])' 2>/dev/null || echo 0)"
+fi
+
+if [[ "$NODE_MAJOR" -lt 22 ]] || ! command -v npm >/dev/null 2>&1; then
+  echo "Installing Node.js 22 LTS + npm from NodeSource..."
+  NODE_SETUP="$(mktemp)"
+  curl -fsSL https://deb.nodesource.com/setup_22.x -o "$NODE_SETUP"
+  sudo -E bash "$NODE_SETUP"
+  rm -f "$NODE_SETUP"
+  sudo apt-get install -y nodejs
+  hash -r
+fi
+
+if ! command -v node >/dev/null 2>&1 || ! command -v npm >/dev/null 2>&1; then
+  echo "ERROR: Node.js/npm installation failed."
   exit 1
 fi
+NODE_MAJOR="$(node -p 'Number(process.versions.node.split(`.`)[0])')"
+if [[ "$NODE_MAJOR" -lt 22 ]]; then
+  echo "ERROR: Node.js 22+ is required, but found $(node --version)."
+  exit 1
+fi
+
+echo "Using $(node --version) with npm $(npm --version)"
+
+cd "$ROOT"
 PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm install
 npm run build
 
