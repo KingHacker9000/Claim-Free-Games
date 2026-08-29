@@ -44,14 +44,11 @@ async function hasCaptcha(frame: FrameLocator) {
   return await frame.locator('iframe[id*="captcha"], iframe[src*="hcaptcha"], .h-captcha').count() > 0;
 }
 
-export async function claimWithBrowser(offer: FreeOffer): Promise<boolean> {
+async function launchPersistentBrowser() {
   await ensureDisplay();
   const profile = join(config.dataDir, 'browser-profile');
-  const shots = join(config.dataDir, 'screenshots');
   await mkdir(profile, { recursive: true });
-  await mkdir(shots, { recursive: true });
-
-  const context = await chromium.launchPersistentContext(profile, {
+  return chromium.launchPersistentContext(profile, {
     headless: false,
     executablePath: config.browserExecutable,
     viewport: { width: 1440, height: 900 },
@@ -59,6 +56,36 @@ export async function claimWithBrowser(offer: FreeOffer): Promise<boolean> {
     handleSIGINT: false,
     args: ['--hide-crash-restore-bubble', '--disable-dev-shm-usage'],
   });
+}
+
+async function closeBrowser(context: BrowserContext) {
+  stopRemoteAssist();
+  await context.close().catch(() => {});
+  if (xvfb && !xvfb.killed) xvfb.kill('SIGTERM');
+  xvfb = undefined;
+}
+
+export async function testBrowserAssist(seconds = 120) {
+  const context = await launchPersistentBrowser();
+  const page = context.pages()[0] ?? await context.newPage();
+  try {
+    await page.goto('https://store.epicgames.com/en-US/free-games', { waitUntil: 'domcontentloaded' });
+    const url = await startRemoteAssist('Claim-Free-Games remote-assist test. No purchase will be attempted.', page.url());
+    console.log(`Remote assist is running at: ${url}`);
+    console.log(`The test browser will stay open for ${seconds} seconds. No purchase actions are performed.`);
+    await page.waitForTimeout(seconds * 1000);
+  } finally {
+    await closeBrowser(context);
+  }
+}
+
+export async function claimWithBrowser(offer: FreeOffer): Promise<boolean> {
+  const profile = join(config.dataDir, 'browser-profile');
+  const shots = join(config.dataDir, 'screenshots');
+  await mkdir(profile, { recursive: true });
+  await mkdir(shots, { recursive: true });
+
+  const context = await launchPersistentBrowser();
   const page = context.pages()[0] ?? await context.newPage();
   try {
     await context.addCookies([
@@ -124,9 +151,6 @@ export async function claimWithBrowser(offer: FreeOffer): Promise<boolean> {
     await notify('Browser claim failed', `${offer.title}: checkout did not report success.`, { priority: 4, click: offer.url });
     return false;
   } finally {
-    stopRemoteAssist();
-    await context.close().catch(() => {});
-    if (xvfb && !xvfb.killed) xvfb.kill('SIGTERM');
-    xvfb = undefined;
+    await closeBrowser(context);
   }
 }
