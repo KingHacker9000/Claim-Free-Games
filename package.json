@@ -9,6 +9,8 @@
     "claim": "npm run build --silent && node dist/src/index.js run",
     "auth": "npm run build --silent && node dist/src/index.js auth",
     "doctor": "npm run build --silent && node dist/src/index.js doctor",
+    "notify-test": "npm run build --silent && node dist/src/index.js notify-test",
+    "assist-test": "npm run build --silent && node dist/src/index.js assist-test",
     "test": "npm run build --silent && node --test dist/test/*.test.js"
   },
   "dependencies": {
