@@ -6,9 +6,9 @@
   "engines": { "node": ">=22" },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "claim": "npm run build --silent && node dist/index.js run",
-    "auth": "npm run build --silent && node dist/index.js auth",
-    "doctor": "npm run build --silent && node dist/index.js doctor",
+    "claim": "npm run build --silent && node dist/src/index.js run",
+    "auth": "npm run build --silent && node dist/src/index.js auth",
+    "doctor": "npm run build --silent && node dist/src/index.js doctor",
     "test": "npm run build --silent && node --test dist/test/*.test.js"
   },
   "dependencies": {
