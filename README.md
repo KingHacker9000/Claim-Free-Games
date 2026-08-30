@@ -1,103 +1,268 @@
-# Claim-Free-Games v2
+<div align="center">
 
-A Raspberry-Pi-friendly Epic Games giveaway claimer. v2 deliberately does **not** scrape the free-games page with Selenium.
+# 🎮 Claim Free Games
 
-## Strategy
+**Automatically claim Epic Games Store giveaways from a Raspberry Pi — API first, browser only when needed.**
 
-1. **API discovery** — query Epic's free-games promotions JSON and extract current zero-cost offers.
-2. **API ownership check** — query account entitlements and skip anything already owned.
-3. **API claim** — submit the free offer through Epic's Launcher `quickPurchase` order endpoint.
-4. **Verify** — re-query entitlements. A UI/API response alone is never treated as proof of ownership.
-5. **Browser fallback** — only if the API transaction does not produce an entitlement, launch a persistent headed Chromium via Patchright on a virtual X display.
-6. **Human fallback** — if Epic asks for login/CAPTCHA or the checkout DOM changes, start noVNC, send an ntfy phone alert, wait for you to finish, then verify ownership and continue.
+![Node](https://img.shields.io/badge/Node.js-22%2B-339933?logo=nodedotjs&logoColor=white)
+![Raspberry Pi](https://img.shields.io/badge/Raspberry%20Pi-5-C51A4A?logo=raspberrypi&logoColor=white)
+![Platform](https://img.shields.io/badge/platform-Linux-blue)
+![Status](https://img.shields.io/badge/status-v2.0.0-success)
 
-Normal runs therefore use no browser at all.
+</div>
 
-## Raspberry Pi 5 setup
+---
 
-Requirements: 64-bit Raspberry Pi OS or Ubuntu. The installer automatically installs Node.js 22 LTS + npm system-wide if the OS-provided Node is missing or too old.
+Claim Free Games is a small self-hosted service that checks Epic's current giveaways once a day and claims anything missing from your library.
+
+The normal path is completely browserless. If Epic rejects the API purchase, the service falls back to a real headed Chromium session running invisibly under Xvfb. If Epic asks for login, CAPTCHA, or an unexpected checkout step, you get a phone notification and can take over the Pi browser remotely through noVNC.
+
+## How it works
+
+```text
+systemd timer (daily)
+        │
+        ▼
+Epic free-games API
+        │
+        ▼
+Epic entitlement check
+        │
+        ├── already owned ───────────────► exit silently
+        │
+        ▼
+🔔 new unowned giveaway detected
+        │
+        ▼
+Epic Launcher quickPurchase API
+        │
+        ├── entitlement verified ────────► ✅ notify success
+        │
+        ▼
+headed Chromium on Xvfb
+        │
+        ├── checkout succeeds ───────────► ✅ notify success
+        │
+        ▼
+login / CAPTCHA / changed checkout
+        │
+        ▼
+🔔 ntfy alert → noVNC over Tailscale
+        │
+        ▼
+you finish the step remotely
+        │
+        ▼
+verify entitlement → success / failure
+```
+
+### Design goals
+
+- **API first** — no browser is launched during normal operation.
+- **Deterministic ownership checks** — a claim is only considered successful after an Epic entitlement appears.
+- **Quiet by default** — routine daily checks are silent.
+- **Useful alerts only** — notifications are sent when a new unowned game is detected, after success/failure, or when you need to intervene.
+- **No stored Epic password** — authentication uses Epic OAuth and a rotating refresh token.
+- **Pi friendly** — designed for a Raspberry Pi 5 or another always-on Linux host.
+
+## Requirements
+
+- 64-bit Raspberry Pi OS / Debian / Ubuntu
+- Raspberry Pi 5 recommended
+- Internet connection
+- Epic Games account
+- Optional but recommended:
+  - [Tailscale](https://tailscale.com/) for private remote access
+  - [ntfy](https://ntfy.sh/) for phone notifications
+
+The installer provisions Node.js 22+, Chromium, Xvfb, x11vnc, noVNC, and websockify.
+
+## Install on Raspberry Pi
 
 ```bash
 git clone https://github.com/KingHacker9000/Claim-Free-Games.git
 cd Claim-Free-Games
-git switch v2-api-browser-fallback
 chmod +x scripts/install-pi.sh
 ./scripts/install-pi.sh
 ```
 
-### One-time Epic API login
-
-No Epic password is stored by this project.
+### 1. Authenticate with Epic
 
 ```bash
 npm run auth
 ```
 
-The command prints an Epic login URL. Open it on any device, sign in, copy the `authorizationCode` from the JSON response, then run:
+Open the printed Epic URL on any device, sign in, and copy the `authorizationCode` from the JSON response.
+
+Then run:
 
 ```bash
-npm run auth -- --code=PASTE_CODE_HERE
+npm run auth -- --code=PASTE_AUTHORIZATION_CODE_HERE
 ```
 
-The OAuth session is stored at `data/session.json` with mode `0600`. Epic refresh tokens rotate, so the new session is written atomically after every refresh.
+The OAuth session is saved to `data/session.json` with file mode `0600`. Epic rotates refresh tokens, so the updated session is persisted immediately after refresh.
 
-### Phone notifications + remote browser
+### 2. Configure notifications and remote access
 
-Install the **ntfy** app on your phone and subscribe to a long random/private topic. Edit `.env`:
+Edit `.env`:
 
 ```bash
-NTFY_URL=https://ntfy.sh/a-long-random-private-topic
-REMOTE_ASSIST_URL=http://pi5:6080/vnc.html?autoconnect=true&resize=remote
-VNC_PASSWORD=use-a-strong-password
+nano .env
 ```
 
-If you use Tailscale, use the Pi's Tailscale hostname/IP for `REMOTE_ASSIST_URL`. The noVNC server is started only when human intervention is required. x11vnc itself binds to localhost and requires the configured VNC password; websockify exposes the browser page on `REMOTE_ASSIST_BIND` (default `0.0.0.0`). Prefer accessing that port only through your LAN/Tailscale and do not port-forward it to the public internet.
+Typical setup:
 
-Run a health check:
+```env
+NTFY_URL=https://ntfy.sh/your-long-private-topic
+
+REMOTE_ASSIST_BIND=100.x.x.x
+REMOTE_ASSIST_URL=http://100.x.x.x:6080/vnc.html?autoconnect=true&resize=remote
+VNC_PASSWORD=use-a-strong-random-password
+```
+
+Use your Pi's Tailscale IP/hostname for the remote-assist address. Do **not** expose port `6080` directly to the public internet.
+
+### 3. Verify everything
 
 ```bash
 npm run doctor
 ```
 
-Test a claim cycle now:
+Expected output includes:
+
+```text
+Epic session: present
+ntfy: configured
+Remote assist URL: http://...
+Epic API: OK (...)
+```
+
+Test notifications:
+
+```bash
+npm run notify-test
+```
+
+Test remote browser access without attempting a purchase:
+
+```bash
+npm run assist-test -- --seconds=180
+```
+
+### 4. Test one claim cycle
 
 ```bash
 npm run claim
 ```
 
-Then enable/start the timer:
+If every current giveaway is already owned, the command simply reports them and exits.
+
+### 5. Enable the daily timer
 
 ```bash
-sudo systemctl start claim-free-games.timer
+sudo systemctl enable --now claim-free-games.timer
 systemctl list-timers claim-free-games.timer
+```
+
+The timer runs approximately once every 24 hours with a small randomized delay. `Persistent=true` means a missed run executes after the Pi comes back online.
+
+## Notifications
+
+Routine checks do **not** notify you.
+
+You will receive an alert when:
+
+- a new free game is detected and is not already owned;
+- a game is successfully claimed through the API;
+- browser fallback successfully claims a game;
+- a claim fails;
+- Epic requires login, CAPTCHA, or manual checkout intervention.
+
+Example flow:
+
+```text
+🔔 New free Epic game detected
+   Game X is free and not in your library. Starting the claim now.
+
+✅ Free game claimed
+   Game X was claimed through the Epic API.
+```
+
+## Commands
+
+| Command | Purpose |
+|---|---|
+| `npm run auth` | Start one-time Epic OAuth setup |
+| `npm run doctor` | Check auth, API, configuration, and current giveaways |
+| `npm run claim` | Run a claim cycle manually |
+| `npm run notify-test` | Send a test ntfy notification |
+| `npm run assist-test -- --seconds=180` | Test Xvfb + Chromium + noVNC safely |
+| `npm test` | Run unit tests |
+
+## Logs and status
+
+Follow live service logs:
+
+```bash
 journalctl -u claim-free-games.service -f
 ```
 
-The included timer checks every 6 hours with a random delay, so it also handles periods where Epic changes giveaways daily.
+Recent history:
 
-## State layout
+```bash
+journalctl -u claim-free-games.service --since "7 days ago" --no-pager
+```
+
+Check the timer:
+
+```bash
+systemctl status claim-free-games.timer --no-pager
+systemctl list-timers claim-free-games.timer
+```
+
+## Data layout
 
 ```text
 data/
-  session.json        # Epic OAuth refresh/access tokens; 0600
-  state.json          # claim history/status
-  browser-profile/    # persistent browser login used only for fallback
-  screenshots/        # browser failure evidence
+├── session.json        # Epic OAuth tokens — treat like a password
+├── state.json          # giveaway/claim state
+├── browser-profile/    # persistent fallback browser profile
+└── screenshots/        # failure screenshots
 ```
 
-## Failure model
-
-The API is primary because it is much less sensitive to storefront DOM changes. Browser fallback uses stable test IDs/roles where possible. If browser automation cannot safely determine what changed, it asks for human intervention rather than clicking arbitrary elements.
-
-A claim is marked successful only when an Epic entitlement matching the giveaway namespace/catalog item appears on the account.
+`.env`, `data/`, and browser state are ignored by Git and should never be committed.
 
 ## Security notes
 
-- Never commit `.env`, `data/session.json`, or `data/browser-profile`.
-- This repo does not store your Epic email/password.
-- Treat the OAuth session file like a password.
-- `quickPurchase` is an Epic Launcher service endpoint and is not a documented public consumer API; Epic may change it. That is why the browser fallback is kept as a separate path.
+- This project never asks you to save your Epic password.
+- Treat `data/session.json` as a secret.
+- Use a strong VNC password.
+- Keep noVNC private behind your LAN or Tailscale.
+- The Epic `quickPurchase` endpoint is an undocumented Launcher service and may change without notice; browser fallback exists for that reason.
 
-## Legacy version
+## Architecture
 
-The old `Buy_Free_Games.py` / packaged executables remain in the repository history. v2 does not depend on them or the bundled ChromeDriver.
+The project is intentionally split into small pieces:
+
+```text
+src/
+├── epic-api.ts       # OAuth, discovery, entitlements, quickPurchase
+├── browser.ts        # Patchright Chromium fallback
+├── remote-assist.ts # x11vnc + noVNC escalation
+├── notifier.ts      # ntfy integration
+├── storage.ts       # session/state persistence
+├── config.ts        # environment configuration
+└── index.ts         # orchestration / CLI
+```
+
+## Disclaimer
+
+This is an unofficial community project and is not affiliated with or endorsed by Epic Games. Store APIs and checkout behavior can change at any time.
+
+---
+
+<div align="center">
+
+Built to run quietly on a Pi and only bother you when something actually needs attention.
+
+</div>

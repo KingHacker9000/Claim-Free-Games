@@ -1,6 +1,6 @@
 {
-  "name": "claim-free-games-v2",
-  "version": "2.0.0-beta.1",
+  "name": "claim-free-games",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
   "engines": { "node": ">=22" },
