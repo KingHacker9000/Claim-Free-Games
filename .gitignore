@@ -1,6 +1,8 @@
 node_modules/
 dist/
 data/
+build/patchright-browsers/
+release/
 .env
 *.log
 .DS_Store
