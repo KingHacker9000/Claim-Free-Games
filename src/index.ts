@@ -59,6 +59,16 @@ async function run() {
       continue;
     }
 
+    // Stay silent on routine daily checks. Only alert when a newly-seen giveaway
+    // is actually missing from the account and a claim attempt is about to start.
+    if (!state.offers[key]) {
+      await notify(
+        'New free Epic game detected',
+        `${offer.title} is free and not in your library. Starting the claim now.`,
+        { priority: 4, click: offer.url },
+      );
+    }
+
     let claimed = false;
     let apiError = '';
     try {
