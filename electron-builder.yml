@@ -39,4 +39,5 @@ linux:
     - AppImage
     - deb
   category: Utility
+  syncDesktopName: true
   artifactName: Claim-Free-Games-${version}-${arch}.${ext}
