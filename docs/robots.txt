@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+Sitemap: https://kinghacker9000.github.io/Claim-Free-Games/sitemap.xml
