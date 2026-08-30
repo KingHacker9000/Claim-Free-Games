@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Claim Free Games — Automatic Epic Games Free Game Claimer</title>
+  <meta name="description" content="Automatically claim Epic Games Store free games on Windows, macOS, Linux, or Raspberry Pi. Open source, API-first, quiet by default, with browser fallback when Epic needs you." />
+  <meta name="author" content="KingHacker9000" />
+  <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
+  <meta name="theme-color" content="#0a0f1f" />
+  <link rel="canonical" href="https://kinghacker9000.github.io/Claim-Free-Games/" />
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="./styles.css" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Claim Free Games" />
+  <meta property="og:title" content="Claim Free Games — Never Miss an Epic Games Giveaway" />
+  <meta property="og:description" content="Automatically claim Epic Games Store giveaways on Windows, macOS, Linux, or Raspberry Pi. Open source and quiet by default." />
+  <meta property="og:url" content="https://kinghacker9000.github.io/Claim-Free-Games/" />
+  <meta property="og:image" content="https://opengraph.githubassets.com/1/KingHacker9000/Claim-Free-Games" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Claim Free Games — Automatic Epic Games Free Game Claimer" />
+  <meta name="twitter:description" content="Install once. Let it quietly claim Epic Games Store giveaways for you." />
+  <meta name="twitter:image" content="https://opengraph.githubassets.com/1/KingHacker9000/Claim-Free-Games" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "name": "Claim Free Games",
+        "url": "https://kinghacker9000.github.io/Claim-Free-Games/",
+        "description": "An open-source automatic Epic Games Store giveaway claimer for Windows, macOS, Linux, and Raspberry Pi.",
+        "inLanguage": "en"
+      },
+      {
+        "@type": "SoftwareApplication",
+        "name": "Claim Free Games",
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": "Windows 10, Windows 11, macOS, Linux, Raspberry Pi OS",
+        "softwareVersion": "2.1.0",
+        "isAccessibleForFree": true,
+        "url": "https://kinghacker9000.github.io/Claim-Free-Games/",
+        "downloadUrl": "https://github.com/KingHacker9000/Claim-Free-Games/releases/latest",
+        "codeRepository": "https://github.com/KingHacker9000/Claim-Free-Games",
+        "description": "Automatically discovers current Epic Games Store giveaways, checks your account entitlements, claims unowned free games using an API-first workflow, and falls back to a real browser when Epic requires human interaction.",
+        "author": {
+          "@type": "Person",
+          "name": "KingHacker9000",
+          "url": "https://github.com/KingHacker9000"
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What does Claim Free Games do?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Claim Free Games checks the Epic Games Store for current giveaways, compares them with your Epic account entitlements, and automatically attempts to claim free games you do not already own."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does Claim Free Games store my Epic Games password?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. Epic password entry happens on Epic's own sign-in page. Claim Free Games stores an OAuth session token locally so it can perform future checks without saving your Epic password."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I run Claim Free Games on a Raspberry Pi?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Raspberry Pi is a recommended always-on setup. The easy installer configures the required software, a once-daily systemd timer, phone notifications, and temporary noVNC browser access for CAPTCHA or login fallback."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does it work on Windows, macOS, and Linux?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Desktop releases are available for Windows x64, macOS Apple Silicon, macOS Intel, and Linux x64. The desktop app runs in the system tray and performs quiet daily checks."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header" id="top">
+    <div class="container nav-wrap">
+      <a class="brand" href="#top" aria-label="Claim Free Games home">
+        <span class="brand-mark" aria-hidden="true">C</span>
+        <span>Claim Free Games</span>
+      </a>
+      <nav class="nav" aria-label="Primary navigation">
+        <a href="#download">Download</a>
+        <a href="#raspberry-pi">Raspberry Pi</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#faq">FAQ</a>
+        <a class="nav-github" href="https://github.com/KingHacker9000/Claim-Free-Games">GitHub ↗</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero">
+      <div class="hero-glow hero-glow-a" aria-hidden="true"></div>
+      <div class="hero-glow hero-glow-b" aria-hidden="true"></div>
+      <div class="container hero-grid">
+        <div class="hero-copy reveal">
+          <div class="eyebrow"><span class="pulse-dot"></span> Open source · v<span data-version>2.1.0</span></div>
+          <h1>Never miss an <span>Epic Games</span> giveaway again.</h1>
+          <p class="hero-lead">Claim Free Games automatically checks the Epic Games Store and claims free games you do not own. Install it once on your computer or Raspberry Pi, then let it quietly handle the rest.</p>
+          <div class="hero-actions">
+            <a id="recommended-download" class="button button-primary" href="#download">Get Claim Free Games</a>
+            <a class="button button-secondary" href="#raspberry-pi">Set up a Raspberry Pi</a>
+          </div>
+          <p class="hero-note">No Epic password stored. No browser in the normal case. No notifications unless there is something worth telling you.</p>
+        </div>
+
+        <div class="hero-visual reveal" aria-label="Claim Free Games workflow preview">
+          <div class="app-window">
+            <div class="window-top">
+              <div class="traffic"><i></i><i></i><i></i></div>
+              <span>Claim Free Games</span>
+              <span class="window-status"><b></b> Active</span>
+            </div>
+            <div class="window-body">
+              <div class="account-row">
+                <div class="account-icon">E</div>
+                <div><small>EPIC ACCOUNT</small><strong>Connected</strong><span>Daily checks enabled</span></div>
+                <div class="checkmark">✓</div>
+              </div>
+              <div class="activity-card">
+                <div class="activity-heading"><span>Latest check</span><span class="quiet-pill">Quiet mode</span></div>
+                <div class="activity-line"><span class="activity-icon owned">✓</span><div><strong>Giveaway found</strong><small>Already in your library</small></div><span>Owned</span></div>
+                <div class="activity-line"><span class="activity-icon claim">↓</span><div><strong>New free game</strong><small>Claim verified by entitlement</small></div><span class="success">Claimed</span></div>
+              </div>
+              <div class="next-check"><span>Next automatic check</span><strong>Tomorrow</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="trust-strip" aria-label="Key benefits">
+      <div class="container trust-grid">
+        <div><strong>API first</strong><span>Browser only when needed</span></div>
+        <div><strong>Quiet by default</strong><span>No daily notification spam</span></div>
+        <div><strong>Ownership verified</strong><span>Epic entitlement is authoritative</span></div>
+        <div><strong>Runs anywhere</strong><span>Windows · macOS · Linux · Pi</span></div>
+      </div>
+    </section>
+
+    <section class="section" id="download">
+      <div class="container">
+        <div class="section-heading reveal">
+          <span class="kicker">Choose your setup</span>
+          <h2>From download to done in minutes.</h2>
+          <p>Use the desktop app if you want the easiest experience on a personal computer. Use Raspberry Pi if you want an always-on box that can claim games even when your main computer is off.</p>
+        </div>
+
+        <div class="platform-grid">
+          <article class="platform-card reveal" data-platform-card="windows">
+            <div class="platform-top"><span class="platform-icon">⊞</span><span class="recommend-badge">Recommended for you</span></div>
+            <h3>Windows</h3>
+            <p>Install the desktop app, connect Epic once, and it stays in your system tray.</p>
+            <ul><li>Windows 10 / 11 x64</li><li>Native desktop notifications</li><li>Bundled browser fallback</li></ul>
+            <a class="button button-card" data-asset="windows" href="https://github.com/KingHacker9000/Claim-Free-Games/releases/latest">Download Windows installer</a>
+          </article>
+
+          <article class="platform-card reveal" data-platform-card="mac">
+            <div class="platform-top"><span class="platform-icon">●</span><span class="recommend-badge">Recommended for you</span></div>
+            <h3>macOS</h3>
+            <p>Native desktop experience for both modern Apple Silicon Macs and Intel Macs.</p>
+            <ul><li>Apple Silicon (M1 and newer)</li><li>Intel x64</li><li>DMG + ZIP downloads</li></ul>
+            <div class="split-buttons">
+              <a class="button button-card" data-asset="mac-arm" href="https://github.com/KingHacker9000/Claim-Free-Games/releases/latest">Apple Silicon</a>
+              <a class="button button-muted" data-asset="mac-x64" href="https://github.com/KingHacker9000/Claim-Free-Games/releases/latest">Intel</a>
+            </div>
+          </article>
+
+          <article class="platform-card reveal" data-platform-card="linux">
+            <div class="platform-top"><span class="platform-icon">⌁</span><span class="recommend-badge">Recommended for you</span></div>
+            <h3>Linux</h3>
+            <p>Choose a portable AppImage or install a standard Debian package.</p>
+            <ul><li>Linux x64</li><li>AppImage</li><li>DEB package</li></ul>
+            <div class="split-buttons">
+              <a class="button button-card" data-asset="linux-appimage" href="https://github.com/KingHacker9000/Claim-Free-Games/releases/latest">AppImage</a>
+              <a class="button button-muted" data-asset="linux-deb" href="https://github.com/KingHacker9000/Claim-Free-Games/releases/latest">.deb</a>
+            </div>
+          </article>
+
+          <article class="platform-card pi-card reveal" data-platform-card="pi">
+            <div class="platform-top"><span class="platform-icon">π</span><span class="always-on-badge">Best always-on setup</span></div>
+            <h3>Raspberry Pi</h3>
+            <p>Perfect for a small home server. One command installs everything and opens a browser setup wizard.</p>
+            <ul><li>Raspberry Pi 4 / 5, 64-bit</li><li>Once-daily systemd timer</li><li>Phone + remote browser fallback</li></ul>
+            <a class="button button-card" href="#raspberry-pi">Show Pi setup</a>
+          </article>
+        </div>
+
+        <div class="release-row reveal">
+          <span>Latest release: <strong>v<span data-version>2.1.0</span></strong></span>
+          <a href="https://github.com/KingHacker9000/Claim-Free-Games/releases/latest">View all release files ↗</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-dark" id="desktop-setup">
+      <div class="container setup-layout">
+        <div class="section-heading reveal">
+          <span class="kicker">Desktop setup</span>
+          <h2>No terminal. No Node. No configuration files.</h2>
+          <p>The Windows, macOS, and Linux builds are designed for normal users. The compatible browser fallback is included in the release package.</p>
+        </div>
+        <ol class="steps">
+          <li class="reveal"><span>1</span><div><h3>Install the app</h3><p>Download the installer for your operating system and open Claim Free Games.</p></div></li>
+          <li class="reveal"><span>2</span><div><h3>Connect Epic Games</h3><p>Click <strong>Connect Epic account</strong> and sign in on Epic's own login page. Your Epic password is not stored by this project.</p></div></li>
+          <li class="reveal"><span>3</span><div><h3>Turn on daily checks</h3><p>The app starts with your computer and checks once per day. Routine checks stay silent.</p></div></li>
+          <li class="reveal"><span>4</span><div><h3>Forget about it</h3><p>When a new unowned giveaway appears, you get an alert before the claim begins and another with the result.</p></div></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="section pi-section" id="raspberry-pi">
+      <div class="container pi-layout">
+        <div class="pi-copy reveal">
+          <span class="kicker">Raspberry Pi / home server</span>
+          <h2>The set-it-and-forget-it option.</h2>
+          <p>Run Claim Free Games on an always-on Raspberry Pi and your main computer never needs to be awake. The easy installer handles Node.js, Chromium, systemd, remote browser fallback, and the setup wizard for you.</p>
+          <div class="mini-features">
+            <span>✓ Raspberry Pi OS / Debian / Ubuntu</span>
+            <span>✓ Tailscale-aware remote fallback</span>
+            <span>✓ ntfy phone alerts</span>
+            <span>✓ Persistent daily timer</span>
+          </div>
+        </div>
+        <div class="terminal-card reveal">
+          <div class="terminal-head"><span><i></i><i></i><i></i></span><b>Raspberry Pi terminal</b></div>
+          <div class="terminal-body">
+            <span class="terminal-label">Paste this one command</span>
+            <code id="pi-command">curl -fsSL https://raw.githubusercontent.com/KingHacker9000/Claim-Free-Games/main/scripts/easy-install-pi.sh | bash</code>
+            <button class="copy-button" id="copy-pi-command" type="button">Copy command</button>
+            <div class="terminal-after">
+              <p><span class="term-ok">✓</span> Installs required packages</p>
+              <p><span class="term-ok">✓</span> Opens a guided web setup wizard</p>
+              <p><span class="term-ok">✓</span> Enables daily automation after setup</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="how-it-works">
+      <div class="container">
+        <div class="section-heading centered reveal">
+          <span class="kicker">Under the hood</span>
+          <h2>Automation without pretending the website never changes.</h2>
+          <p>The normal path uses account and store APIs. A real browser is reserved for the cases where Epic requires one.</p>
+        </div>
+        <div class="flow-grid">
+          <article class="flow-card reveal"><span class="flow-num">01</span><h3>Discover</h3><p>Fetch the currently active Epic Games Store giveaways for your account region.</p></article>
+          <article class="flow-card reveal"><span class="flow-num">02</span><h3>Compare</h3><p>Check Epic account entitlements and silently skip games that are already in your library.</p></article>
+          <article class="flow-card reveal"><span class="flow-num">03</span><h3>Claim</h3><p>Attempt the free order through an API-first flow and verify that the new entitlement actually appears.</p></article>
+          <article class="flow-card reveal"><span class="flow-num">04</span><h3>Fallback</h3><p>If Epic needs login, CAPTCHA, or a changed checkout flow, open a real browser and ask for human help.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-dark" id="security">
+      <div class="container security-layout">
+        <div class="security-copy reveal">
+          <span class="kicker">Designed for trust</span>
+          <h2>Your Epic password is not stored.</h2>
+          <p>Authentication happens through Epic. Claim Free Games persists an OAuth session locally so it can check and claim later without collecting your Epic password.</p>
+          <a class="text-link" href="https://github.com/KingHacker9000/Claim-Free-Games">Read the source code on GitHub ↗</a>
+        </div>
+        <div class="security-grid">
+          <div class="security-item reveal"><span>01</span><div><strong>Local session storage</strong><p>OAuth session data stays on the device running Claim Free Games.</p></div></div>
+          <div class="security-item reveal"><span>02</span><div><strong>Entitlement verification</strong><p>A browser success message is not trusted by itself. The account entitlement is checked afterward.</p></div></div>
+          <div class="security-item reveal"><span>03</span><div><strong>Private Pi fallback</strong><p>Remote browser access is designed for LAN or Tailscale rather than public internet exposure.</p></div></div>
+          <div class="security-item reveal"><span>04</span><div><strong>Open source</strong><p>The complete implementation and release workflow are publicly inspectable on GitHub.</p></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="faq">
+      <div class="container faq-layout">
+        <div class="section-heading reveal">
+          <span class="kicker">FAQ</span>
+          <h2>Questions people ask before installing.</h2>
+          <p>Short answers for humans, search engines, and anyone evaluating whether the project fits their setup.</p>
+        </div>
+        <div class="faq-list">
+          <details class="reveal" open>
+            <summary>What does Claim Free Games do?</summary>
+            <p>It checks the Epic Games Store for current giveaways, compares them with the games already owned by your Epic account, and automatically attempts to claim any free game you are missing.</p>
+          </details>
+          <details class="reveal">
+            <summary>Is this an automatic Epic Games free game claimer?</summary>
+            <p>Yes. The project is designed specifically to automate claiming time-limited Epic Games Store giveaways. It checks once per day by default and only starts a claim when a current giveaway is not already owned.</p>
+          </details>
+          <details class="reveal">
+            <summary>Does it store my Epic Games password?</summary>
+            <p>No. You sign in through Epic's own login page. Claim Free Games stores an OAuth session token locally on your device so later checks do not require saving your Epic password.</p>
+          </details>
+          <details class="reveal">
+            <summary>Can I run it on a Raspberry Pi 5?</summary>
+            <p>Yes. Raspberry Pi 5 is an excellent always-on host. The Pi installer configures the app, Chromium fallback, a once-daily systemd timer, phone alerts, and remote noVNC access when human interaction is required.</p>
+          </details>
+          <details class="reveal">
+            <summary>Can I run it on Windows, macOS, or Linux instead?</summary>
+            <p>Yes. Desktop builds are available for Windows x64, macOS Apple Silicon, macOS Intel, and Linux x64. The desktop app lives in the system tray and uses native notifications.</p>
+          </details>
+          <details class="reveal">
+            <summary>Will it send me a notification every day?</summary>
+            <p>No. Routine daily checks stay silent. Notifications are intended for meaningful events: a new unowned giveaway is detected, a game is claimed, a claim fails, or Epic requires you to sign in or solve a CAPTCHA.</p>
+          </details>
+          <details class="reveal">
+            <summary>Why does it have a browser fallback?</summary>
+            <p>Epic can change checkout behavior or request human verification. Instead of making fragile browser automation the default, Claim Free Games uses an API-first path and opens a real Chromium session only when the normal route cannot complete the claim.</p>
+          </details>
+          <details class="reveal">
+            <summary>Is this affiliated with Epic Games?</summary>
+            <p>No. Claim Free Games is an unofficial open-source community project and is not affiliated with or endorsed by Epic Games.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section class="final-cta">
+      <div class="container final-card reveal">
+        <div><span class="kicker">Ready when you are</span><h2>Install it once. Let it stay quiet until there is something free to claim.</h2></div>
+        <div class="final-actions"><a class="button button-primary" href="#download">Choose your download</a><a class="button button-secondary" href="https://github.com/KingHacker9000/Claim-Free-Games">View on GitHub</a></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-grid">
+      <div><a class="brand footer-brand" href="#top"><span class="brand-mark">C</span><span>Claim Free Games</span></a><p>Unofficial open-source automation for Epic Games Store giveaways.</p></div>
+      <div class="footer-links"><a href="https://github.com/KingHacker9000/Claim-Free-Games">Source</a><a href="https://github.com/KingHacker9000/Claim-Free-Games/releases/latest">Releases</a><a href="https://github.com/KingHacker9000/Claim-Free-Games/issues">Issues</a><a href="./llms.txt">AI / LLM info</a></div>
+    </div>
+    <div class="container legal">Claim Free Games is not affiliated with or endorsed by Epic Games. Epic Games and related marks belong to their respective owners.</div>
+  </footer>
+
+  <script src="./app.js" defer></script>
+</body>
+</html>
