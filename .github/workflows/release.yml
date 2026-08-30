@@ -1,0 +1,96 @@
+name: Build desktop release
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Optional release tag, e.g. v2.1.0. Leave blank to only build artifacts."
+        required: false
+        type: string
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            name: windows-x64
+            args: --win --x64
+          - os: ubuntu-24.04
+            name: linux-x64
+            args: --linux --x64
+          - os: macos-15
+            name: macos-arm64
+            args: --mac --arm64
+          - os: macos-15-intel
+            name: macos-x64
+            args: --mac --x64
+    runs-on: ${{ matrix.os }}
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/build/patchright-browsers
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install
+      - name: Install desktop build tools
+        run: npm install --no-save electron@43.4.0 electron-builder@26.15.3
+      - name: Install Patchright Chromium
+        run: npx patchright install chromium
+      - name: Test
+        run: npm test
+      - name: Compile desktop app
+        run: npm run build:desktop
+      - name: Build installer
+        shell: bash
+        run: npx electron-builder ${{ matrix.args }} --publish never
+      - uses: actions/upload-artifact@v4
+        with:
+          name: claim-free-games-${{ matrix.name }}
+          path: |
+            release/*.exe
+            release/*.AppImage
+            release/*.deb
+            release/*.dmg
+            release/*.zip
+          if-no-files-found: error
+
+  pi-installer:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Package Pi easy installer
+        run: cp scripts/easy-install-pi.sh Claim-Free-Games-Pi-Installer.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: claim-free-games-pi-installer
+          path: Claim-Free-Games-Pi-Installer.sh
+
+  release:
+    needs: [build, pi-installer]
+    permissions:
+      contents: write
+    if: startsWith(github.ref, 'refs/tags/') || inputs.release_tag != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.release_tag || github.ref_name }}
+          target_commitish: main
+          generate_release_notes: true
+          files: artifacts/*
