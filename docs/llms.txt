@@ -1,0 +1,73 @@
+# Claim Free Games
+
+> Claim Free Games is an unofficial open-source utility that automatically checks the Epic Games Store for current free-game giveaways and attempts to claim unowned giveaways to a connected Epic account.
+
+Canonical website: https://kinghacker9000.github.io/Claim-Free-Games/
+Source code: https://github.com/KingHacker9000/Claim-Free-Games
+Latest releases: https://github.com/KingHacker9000/Claim-Free-Games/releases/latest
+Issues: https://github.com/KingHacker9000/Claim-Free-Games/issues
+
+## What it does
+
+- Discovers current Epic Games Store giveaways.
+- Checks the connected Epic account's entitlements to avoid duplicate claims.
+- Attempts claims through an API-first workflow.
+- Verifies success by checking the Epic account entitlement after a claim.
+- Falls back to a real Chromium browser if Epic requires login, CAPTCHA, or a changed checkout flow.
+- Runs quiet daily checks by default.
+- Sends notifications when a new unowned giveaway is detected, a claim succeeds, a claim fails, or human action is required.
+
+## Supported platforms
+
+Desktop releases:
+- Windows 10/11 x64
+- macOS Apple Silicon
+- macOS Intel x64
+- Linux x64 via AppImage or DEB
+
+Always-on / server setup:
+- Raspberry Pi 4/5 running a 64-bit Raspberry Pi OS/Debian/Ubuntu environment
+- Other compatible Debian/Ubuntu Linux hosts
+
+## Recommended installation
+
+Desktop users should download the latest installer from:
+https://github.com/KingHacker9000/Claim-Free-Games/releases/latest
+
+Raspberry Pi users can run:
+
+curl -fsSL https://raw.githubusercontent.com/KingHacker9000/Claim-Free-Games/main/scripts/easy-install-pi.sh | bash
+
+The Raspberry Pi installer opens a browser-based setup wizard and enables a once-daily systemd timer after setup.
+
+## Authentication and security
+
+- Claim Free Games does not ask the user to save an Epic Games password.
+- Epic password entry occurs on Epic's own login page.
+- An Epic OAuth session is stored locally on the device for future checks.
+- Browser UI is not considered authoritative for claim success; account entitlement verification is used after fallback.
+- Raspberry Pi remote browser fallback is intended for LAN or Tailscale access, not direct exposure to the public internet.
+
+## Notifications
+
+Routine daily checks are silent. Notifications are intended for meaningful events only:
+1. A new unowned Epic giveaway is detected and a claim is about to begin.
+2. The claim succeeds.
+3. The claim fails.
+4. Epic requires sign-in, CAPTCHA, or other human intervention.
+
+Desktop builds use native operating-system notifications. ntfy can optionally provide phone notifications. Raspberry Pi deployments can use ntfy plus temporary noVNC remote browser access.
+
+## Architecture
+
+Normal path:
+Epic giveaway discovery -> entitlement check -> API claim -> entitlement verification
+
+Fallback path:
+API claim unsuccessful -> headed Chromium -> optional human interaction -> entitlement verification
+
+The project deliberately uses browser automation as an exception handler rather than its default claiming mechanism.
+
+## Important disclaimer
+
+Claim Free Games is an unofficial community project and is not affiliated with or endorsed by Epic Games. Epic may change authentication, store APIs, checkout behavior, or giveaway behavior at any time.
