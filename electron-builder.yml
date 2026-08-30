@@ -1,0 +1,43 @@
+appId: com.kinghacker9000.claimfreegames
+productName: Claim Free Games
+copyright: Copyright © 2026 Ashish Ajin
+directories:
+  output: release
+files:
+  - dist/**/*
+  - desktop/ui/**/*
+  - desktop/preload.cjs
+  - package.json
+asar: true
+asarUnpack:
+  - node_modules/patchright/**/*
+  - node_modules/patchright-core/**/*
+extraResources:
+  - from: build/patchright-browsers
+    to: patchright-browsers
+    filter:
+      - "**/*"
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  artifactName: Claim-Free-Games-${version}-Setup.${ext}
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+mac:
+  identity: null
+  target:
+    - dmg
+    - zip
+  category: public.app-category.utilities
+  artifactName: Claim-Free-Games-${version}-${arch}.${ext}
+linux:
+  target:
+    - AppImage
+    - deb
+  category: Utility
+  syncDesktopName: true
+  artifactName: Claim-Free-Games-${version}-${arch}.${ext}

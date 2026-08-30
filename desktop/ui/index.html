@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:;" />
+  <title>Claim Free Games</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div class="logo">🎮</div>
+      <div>
+        <h1>Claim Free Games</h1>
+        <p>Epic giveaways, claimed automatically.</p>
+      </div>
+      <span id="version" class="version"></span>
+    </header>
+
+    <section id="setup" class="card hidden">
+      <span class="eyebrow">FIRST-TIME SETUP</span>
+      <h2>Three clicks and you're done.</h2>
+      <p class="muted">No Epic password is stored. We keep an OAuth refresh token locally on this device.</p>
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="grow">
+          <h3>Connect Epic Games</h3>
+          <p id="epic-status" class="muted">Not connected yet.</p>
+          <button id="connect-epic" class="primary">Connect Epic account</button>
+          <details>
+            <summary>Login window didn't finish automatically?</summary>
+            <textarea id="auth-code" placeholder="Paste the authorizationCode or the whole JSON response"></textarea>
+            <button id="submit-code">Use pasted code</button>
+          </details>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="grow">
+          <h3>Phone notifications <span class="optional">optional</span></h3>
+          <p class="muted">Desktop notifications always work. Add an ntfy topic if you also want alerts on your phone.</p>
+          <input id="setup-ntfy" placeholder="https://ntfy.sh/your-private-topic" />
+          <button id="setup-test-notify" class="secondary">Send test</button>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="grow">
+          <h3>Run automatically</h3>
+          <label class="toggle-row"><input id="setup-daily" type="checkbox" checked /> <span>Check once per day and start with this computer</span></label>
+          <p class="muted">Routine checks are silent. You are only notified when a new unowned game is detected, claimed, fails, or needs your help.</p>
+          <button id="finish-setup" class="primary">Finish setup</button>
+        </div>
+      </div>
+      <p id="setup-error" class="error"></p>
+    </section>
+
+    <section id="dashboard" class="hidden">
+      <div class="grid">
+        <article class="card hero-card">
+          <div class="status-dot"></div>
+          <div>
+            <span class="eyebrow">EPIC ACCOUNT</span>
+            <h2 id="account-name">Connected</h2>
+            <p id="account-country" class="muted"></p>
+          </div>
+          <button id="run-now" class="primary push">Check now</button>
+        </article>
+
+        <article class="card">
+          <span class="eyebrow">AUTOMATION</span>
+          <h3 id="auto-title">Daily checks on</h3>
+          <p id="next-check" class="muted">Next check will be scheduled automatically.</p>
+          <label class="toggle-row"><input id="daily-toggle" type="checkbox" /> <span>Check once per day</span></label>
+        </article>
+
+        <article class="card">
+          <span class="eyebrow">PHONE ALERTS</span>
+          <h3>ntfy</h3>
+          <input id="ntfy-url" placeholder="Optional ntfy topic URL" />
+          <div class="row"><button id="save-notify">Save</button><button id="test-notify" class="secondary">Test</button></div>
+        </article>
+      </div>
+
+      <article class="card activity">
+        <div class="row spread"><div><span class="eyebrow">LAST CHECK</span><h3 id="last-check">Not run yet</h3></div><button id="open-data" class="ghost">Open app data</button></div>
+        <div id="summary" class="summary muted">Run a check to see results here.</div>
+      </article>
+      <p id="dashboard-error" class="error"></p>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

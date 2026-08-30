@@ -11,8 +11,8 @@ USER_NAME="${SUDO_USER:-$USER}"
 sudo apt-get update
 sudo apt-get install -y chromium xvfb x11vnc novnc websockify ca-certificates curl gnupg
 
-# Raspberry Pi OS/Debian 13 currently ships an older Node release. Install the
-# NodeSource 22.x LTS package system-wide so npm is also available to systemd.
+# Raspberry Pi OS/Debian may ship an older Node release. Install NodeSource
+# 22.x system-wide so npm is also available to systemd.
 NODE_MAJOR=0
 if command -v node >/dev/null 2>&1; then
   NODE_MAJOR="$(node -p 'Number(process.versions.node.split(`.`)[0])' 2>/dev/null || echo 0)"
@@ -52,18 +52,25 @@ fi
 if grep -q '^VNC_PASSWORD=change-this-password$' .env; then
   VNC_PASS="$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 18 || true)"
   sed -i "s/^VNC_PASSWORD=.*/VNC_PASSWORD=$VNC_PASS/" .env
-  echo "Generated VNC password: $VNC_PASS"
+  if [[ "${CFG_EASY_INSTALL:-0}" != "1" ]]; then
+    echo "Generated VNC password: $VNC_PASS"
+  fi
 fi
 
 sed -e "s|__USER__|$USER_NAME|g" -e "s|__INSTALL_DIR__|$ROOT|g" systemd/claim-free-games.service | sudo tee /etc/systemd/system/claim-free-games.service >/dev/null
 sudo cp systemd/claim-free-games.timer /etc/systemd/system/claim-free-games.timer
 sudo systemctl daemon-reload
-sudo systemctl enable claim-free-games.timer
 
-echo
-echo "Installed. Next steps:"
-echo "  1) npm run auth"
-echo "  2) edit .env and set NTFY_URL + REMOTE_ASSIST_URL"
-echo "  3) npm run doctor"
-echo "  4) sudo systemctl start claim-free-games.service"
-echo "  5) sudo systemctl start claim-free-games.timer"
+if [[ "${CFG_EASY_INSTALL:-0}" == "1" ]]; then
+  echo
+  echo "Core components installed. Starting the setup wizard next."
+else
+  sudo systemctl enable claim-free-games.timer
+  echo
+  echo "Installed. Next steps:"
+  echo "  1) npm run auth"
+  echo "  2) edit .env and set NTFY_URL + REMOTE_ASSIST_URL"
+  echo "  3) npm run doctor"
+  echo "  4) sudo systemctl start claim-free-games.service"
+  echo "  5) sudo systemctl start claim-free-games.timer"
+fi
