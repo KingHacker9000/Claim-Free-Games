@@ -11,6 +11,7 @@ let xvfb: ChildProcess | undefined;
 
 async function ensureDisplay() {
   if (process.env.DISPLAY || process.platform !== 'linux') return;
+  if (config.desktopMode) throw new Error('A graphical desktop session is required for browser fallback.');
   process.env.DISPLAY = ':99';
   xvfb = spawn('Xvfb', [':99', '-screen', '0', '1440x900x24', '-nolisten', 'tcp'], { stdio: 'ignore' });
   await new Promise(r => setTimeout(r, 700));
@@ -18,14 +19,25 @@ async function ensureDisplay() {
 }
 
 async function humanGate(page: Page, reason: string, gameUrl: string, done: () => Promise<boolean>) {
-  await startRemoteAssist(reason, gameUrl);
-  const deadline = Date.now() + config.humanTimeoutMs;
-  while (Date.now() < deadline) {
-    if (await done().catch(() => false)) { stopRemoteAssist(); return true; }
-    await page.waitForTimeout(2000);
+  let remote = false;
+  if (config.desktopMode) {
+    await notify('Claim Free Games needs you', `${reason}\nThe Epic browser is open on this computer.`, { priority: 5, click: gameUrl });
+    try { await page.bringToFront(); } catch {}
+  } else {
+    await startRemoteAssist(reason, gameUrl);
+    remote = true;
   }
-  stopRemoteAssist();
-  return false;
+
+  const deadline = Date.now() + config.humanTimeoutMs;
+  try {
+    while (Date.now() < deadline) {
+      if (await done().catch(() => false)) return true;
+      await page.waitForTimeout(2000);
+    }
+    return false;
+  } finally {
+    if (remote) stopRemoteAssist();
+  }
 }
 
 async function loggedIn(page: Page) {
@@ -34,7 +46,7 @@ async function loggedIn(page: Page) {
   return await nav.getAttribute('isloggedin') === 'true';
 }
 
-async function findCheckout(_context: BrowserContext, page: Page): Promise<FrameLocator | null> {
+async function findCheckout(page: Page): Promise<FrameLocator | null> {
   await page.locator('#webPurchaseContainer iframe').waitFor({ state: 'attached', timeout: 30_000 }).catch(() => {});
   if (await page.locator('#webPurchaseContainer iframe').count()) return page.frameLocator('#webPurchaseContainer iframe');
   return null;
@@ -70,9 +82,14 @@ export async function testBrowserAssist(seconds = 120) {
   const page = context.pages()[0] ?? await context.newPage();
   try {
     await page.goto('https://store.epicgames.com/en-US/free-games', { waitUntil: 'domcontentloaded' });
-    const url = await startRemoteAssist('Claim-Free-Games remote-assist test. No purchase will be attempted.', page.url());
-    console.log(`Remote assist is running at: ${url}`);
-    console.log(`The test browser will stay open for ${seconds} seconds. No purchase actions are performed.`);
+    if (config.desktopMode) {
+      await page.bringToFront();
+      console.log(`Visible browser test is running for ${seconds} seconds.`);
+    } else {
+      const url = await startRemoteAssist('Claim-Free-Games remote-assist test. No purchase will be attempted.', page.url());
+      console.log(`Remote assist is running at: ${url}`);
+      console.log(`The test browser will stay open for ${seconds} seconds. No purchase actions are performed.`);
+    }
     await page.waitForTimeout(seconds * 1000);
   } finally {
     await closeBrowser(context);
@@ -80,9 +97,7 @@ export async function testBrowserAssist(seconds = 120) {
 }
 
 export async function claimWithBrowser(offer: FreeOffer): Promise<boolean> {
-  const profile = join(config.dataDir, 'browser-profile');
   const shots = join(config.dataDir, 'screenshots');
-  await mkdir(profile, { recursive: true });
   await mkdir(shots, { recursive: true });
 
   const context = await launchPersistentBrowser();
@@ -95,7 +110,7 @@ export async function claimWithBrowser(offer: FreeOffer): Promise<boolean> {
     await page.goto(offer.url, { waitUntil: 'domcontentloaded' });
 
     if (!await loggedIn(page)) {
-      const ok = await humanGate(page, 'Epic browser session is signed out. Please sign in once; the profile will persist on the Pi.', offer.url, () => loggedIn(page));
+      const ok = await humanGate(page, 'Epic browser session is signed out. Please sign in once; this browser profile will be remembered.', offer.url, () => loggedIn(page));
       if (!ok) return false;
       await page.goto(offer.url, { waitUntil: 'domcontentloaded' });
     }
@@ -116,14 +131,12 @@ export async function claimWithBrowser(offer: FreeOffer): Promise<boolean> {
       await page.getByRole('button', { name: /^accept$/i }).click();
     }
 
-    const frame = await findCheckout(context, page);
+    const frame = await findCheckout(page);
     if (!frame) {
-      const ok = await humanGate(page, `Checkout UI changed for ${offer.title}. Complete the free order manually.`, offer.url, async () => {
-        await page.goto(offer.url, { waitUntil: 'domcontentloaded' }).catch(() => {});
-        label = (await purchase.innerText().catch(() => '')).trim().toLowerCase();
-        return label.includes('in library') || label.includes('owned');
+      return await humanGate(page, `Checkout UI changed for ${offer.title}. Complete the free order manually.`, offer.url, async () => {
+        const body = await page.locator('body').innerText().catch(() => '');
+        return /thanks for your order|in library|owned/i.test(body);
       });
-      return ok;
     }
 
     if (await frame.locator(':text-matches("unavailable in your region", "i")').count()) return false;
