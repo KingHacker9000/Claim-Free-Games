@@ -36,7 +36,15 @@ export async function getFreshSession(): Promise<EpicSession> {
 async function apiClaim(session: EpicSession, offer: FreeOffer) {
   const response = await quickPurchase(session, offer);
   console.log(`[api] ${offer.title}: ${JSON.stringify(response)}`);
+  if (response?.quickPurchaseStatus === 'CHECKOUT') {
+    console.log(`[api] ${offer.title}: Epic requires checkout; escalating to browser fallback.`);
+    return false;
+  }
   return await waitForOwnership(session, offer);
+}
+
+function shortReason(message: string) {
+  return message.replace(/\s+/g, ' ').trim().slice(0, 240);
 }
 
 export async function runClaimCycle(options: { throwOnFailure?: boolean } = {}): Promise<ClaimRunSummary> {
@@ -87,7 +95,11 @@ export async function runClaimCycle(options: { throwOnFailure?: boolean } = {}):
       continue;
     }
 
-    await claimWithBrowser(offer).catch(e => console.error(`[browser] ${offer.title}:`, e));
+    let browserError = '';
+    await claimWithBrowser(offer).catch(e => {
+      browserError = String((e as any)?.message || e);
+      console.error(`[browser] ${offer.title}:`, e);
+    });
     // The storefront UI is never authoritative. Always verify the entitlement,
     // even if the browser could not recognize its own success page.
     claimed = await waitForOwnership(session, offer, 4).catch(() => false);
@@ -100,10 +112,11 @@ export async function runClaimCycle(options: { throwOnFailure?: boolean } = {}):
       entitlements = await fetchEntitlements(session);
     } else {
       summary.failed++;
-      const message = apiError || 'Browser fallback failed or ownership could not be verified';
+      const message = browserError || apiError || 'Browser fallback failed or ownership could not be verified';
       summary.results.push({ title: offer.title, status: 'failed', message });
       state.offers[key] = { title: offer.title, status: 'failed', updatedAt: new Date().toISOString(), message };
-      await notify('Free game claim failed', `${offer.title} still is not owned. Open it manually before ${offer.endDate}.`, { priority: 5, click: offer.url });
+      const reason = shortReason(message);
+      await notify('Free game claim failed', `${offer.title} still is not owned. Reason: ${reason}. Open it manually before ${offer.endDate}.`, { priority: 5, click: offer.url });
     }
 
     await saveState(state);
