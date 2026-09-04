@@ -11,5 +11,8 @@ Environment=NODE_ENV=production
 EnvironmentFile=-__INSTALL_DIR__/.env
 ExecStart=/usr/bin/env npm run claim
 Nice=10
-PrivateTmp=true
+# Xvfb creates its Unix-domain X11 socket under /tmp/.X11-unix. A private
+# /tmp can prevent an unprivileged Xvfb from creating/using that socket on
+# some systemd/Debian configurations, so keep the normal host /tmp here.
+PrivateTmp=false
 NoNewPrivileges=true
