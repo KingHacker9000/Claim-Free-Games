@@ -57,9 +57,8 @@ if grep -q '^VNC_PASSWORD=change-this-password$' .env; then
   fi
 fi
 
-sed -e "s|__USER__|$USER_NAME|g" -e "s|__INSTALL_DIR__|$ROOT|g" systemd/claim-free-games.service | sudo tee /etc/systemd/system/claim-free-games.service >/dev/null
-sudo cp systemd/claim-free-games.timer /etc/systemd/system/claim-free-games.timer
-sudo systemctl daemon-reload
+chmod +x "$ROOT/scripts/install-systemd.sh"
+"$ROOT/scripts/install-systemd.sh"
 
 if [[ "${CFG_EASY_INSTALL:-0}" == "1" ]]; then
   echo
