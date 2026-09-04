@@ -9,13 +9,46 @@ import { startRemoteAssist, stopRemoteAssist } from './remote-assist.js';
 
 let xvfb: ChildProcess | undefined;
 
+async function tryStartXvfb(display: string) {
+  let stderr = '';
+  let spawnError: Error | undefined;
+  const proc = spawn('Xvfb', [display, '-screen', '0', '1440x900x24', '-nolisten', 'tcp'], {
+    stdio: ['ignore', 'ignore', 'pipe'],
+  });
+  proc.stderr?.on('data', chunk => { stderr += String(chunk); });
+  proc.once('error', e => { spawnError = e; });
+
+  await new Promise(r => setTimeout(r, 800));
+
+  if (spawnError) {
+    return { proc, ok: false, error: spawnError.message };
+  }
+  if (proc.exitCode !== null) {
+    return { proc, ok: false, error: stderr.trim() || `Xvfb exited with code ${proc.exitCode}` };
+  }
+  return { proc, ok: true, error: '' };
+}
+
 async function ensureDisplay() {
   if (process.env.DISPLAY || process.platform !== 'linux') return;
   if (config.desktopMode) throw new Error('A graphical desktop session is required for browser fallback.');
-  process.env.DISPLAY = ':99';
-  xvfb = spawn('Xvfb', [':99', '-screen', '0', '1440x900x24', '-nolisten', 'tcp'], { stdio: 'ignore' });
-  await new Promise(r => setTimeout(r, 700));
-  if (xvfb.exitCode !== null) throw new Error('Xvfb failed to start. Install xvfb or set DISPLAY.');
+
+  // :99 is the traditional default, but a stale/parallel X server can already
+  // own it. Probe a small range and use the first display that actually stays up.
+  let lastError = '';
+  for (let n = 99; n <= 109; n++) {
+    const display = `:${n}`;
+    const result = await tryStartXvfb(display);
+    if (result.ok) {
+      process.env.DISPLAY = display;
+      xvfb = result.proc;
+      console.log(`[browser] Xvfb started on ${display}.`);
+      return;
+    }
+    lastError = `${display}: ${result.error}`;
+  }
+
+  throw new Error(`Xvfb failed to start on displays :99-:109. Last error: ${lastError}`);
 }
 
 async function humanGate(page: Page, reason: string, gameUrl: string, done: () => Promise<boolean>) {
@@ -75,6 +108,7 @@ async function closeBrowser(context: BrowserContext) {
   await context.close().catch(() => {});
   if (xvfb && !xvfb.killed) xvfb.kill('SIGTERM');
   xvfb = undefined;
+  if (process.platform === 'linux' && !config.desktopMode) delete process.env.DISPLAY;
 }
 
 export async function testBrowserAssist(seconds = 120) {
@@ -117,7 +151,7 @@ export async function claimWithBrowser(offer: FreeOffer): Promise<boolean> {
 
     const purchase = page.locator('button[data-testid="purchase-cta-button"]').first();
     await purchase.waitFor({ timeout: 45_000 });
-    let label = (await purchase.innerText()).trim().toLowerCase();
+    const label = (await purchase.innerText()).trim().toLowerCase();
     if (label.includes('in library') || label.includes('owned')) return true;
 
     const continueButton = page.getByRole('button', { name: /^continue$/i });
